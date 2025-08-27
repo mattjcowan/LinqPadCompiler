@@ -65,6 +65,7 @@ jobs:
       run: dotnet restore src/LinqPadCompiler.csproj
 
     - name: Build single variant for platform
+      shell: bash
       run: |
         # Set variables
         PLATFORM="${{ matrix.rid }}"

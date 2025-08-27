@@ -5,12 +5,14 @@ A command-line tool that compiles LINQPad scripts (`.linq` files) into standalon
 ## Quick Installation
 
 ### Automatic Installation (Recommended)
+
 ```bash
 # Auto-detects your platform and .NET SDK availability
 curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
 ```
 
 ### Choose Your Variant
+
 ```bash
 # Lite: ~10MB download, requires .NET SDK on target machine
 curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=lite
@@ -20,6 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/ins
 ```
 
 ### Manual Installation
+
 1. Download the appropriate variant and platform from [Releases](https://github.com/mattjcowan/LinqPadCompiler/releases):
    - **Lite variants**: `linqpadcompiler-lite-{platform}.{ext}` (~10MB)
    - **Full variants**: `linqpadcompiler-full-{platform}.{ext}` (~200MB)
@@ -28,26 +31,29 @@ curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/ins
 
 ### Available Variants
 
-| Variant | Download Size | Extracted Size | .NET SDK Required | Best For |
-|---------|---------------|----------------|-------------------|----------|
-| **Lite** | ~10MB | ~30MB | ✅ Yes | Developers, CI/CD pipelines |
-| **Full** | ~200MB | ~600MB | ❌ No | Production servers, clean environments |
+| Variant  | Download Size | Extracted Size | .NET SDK Required | Best For                               |
+| -------- | ------------- | -------------- | ----------------- | -------------------------------------- |
+| **Lite** | ~10MB         | ~30MB          | ✅ Yes            | Developers, CI/CD pipelines            |
+| **Full** | ~200MB        | ~600MB         | ❌ No             | Production servers, clean environments |
 
 ## Usage
 
 ### Basic Examples
 
 Compile a LINQPad script to a runnable application:
+
 ```bash
 linqpadcompiler --linq-file script.linq --output-dir ./output --create
 ```
 
 Create a single-file executable:
+
 ```bash
 linqpadcompiler --linq-file script.linq --output-dir ./output --output-type SingleFileDll --create
 ```
 
 Generate source code only (no compilation):
+
 ```bash
 linqpadcompiler --linq-file script.linq --output-dir ./output --output-type SourceFolderOnly --create
 ```
@@ -77,11 +83,13 @@ Options:
 ## Supported LINQPad Features
 
 ### Query Types
+
 - ✅ **C# Program** - Full program compilation with `Main` method
 - ❌ C# Expression - Not supported
 - ❌ C# Statement(s) - Not supported
 
 ### Dependencies
+
 - ✅ **NuGet Packages** - Automatically installed during compilation
 - ✅ **Namespaces** - Imported as using statements
 - ✅ **Nested Classes** - Extracted to top-level scope
@@ -102,7 +110,7 @@ void Main(string[] args)
     var data = new { Name = "John", Age = 30 };
     var json = JsonConvert.SerializeObject(data, Formatting.Indented);
     Console.WriteLine(json);
-    
+
     if (args.Length > 0)
     {
         Console.WriteLine($"First argument: {args[0]}");
@@ -139,7 +147,7 @@ Each platform-specific script supports:
 ```bash
 # Available build scripts
 ./build-linux-x64.sh    # Linux x86_64
-./build-win-x64.sh       # Windows x86_64  
+./build-win-x64.sh       # Windows x86_64
 ./build-osx-x64.sh       # macOS Intel
 ./build-osx-arm64.sh     # macOS Apple Silicon
 ./build-all.sh           # All platforms
@@ -188,11 +196,30 @@ LinqPadCompiler/
 └── .github/workflows/         # CI/CD automation
 ```
 
+### Push a new Release
+
+#### Test without creating a tag
+
+1. Commit the fix
+2. Go to GitHub → Actions → "Build and Release" workflow
+3. Click "Run workflow" and manually trigger it
+4. If successful, then create the real tag
+
+#### Create a patch release
+
+```bash
+  git add .github/workflows/release.yml
+  git commit -m "Fix Windows PowerShell syntax in GitHub Actions"
+  git tag v1.0.1
+  git push origin main
+  git push origin v1.0.1
+```
+
 ### Development Workflow
 
 1. **Make changes** to source code
 2. **Test locally**: `./tests/run-tests.sh --test-variants`
-3. **Test installation**: `./tests/test-installation.sh` 
+3. **Test installation**: `./tests/test-installation.sh`
 4. **Build specific platform**: `./build-linux-x64.sh --variant=lite`
 5. **Build all variants**: `./build-all.sh --variant=both`
 6. **Commit and tag**: Triggers automated CI/CD release
