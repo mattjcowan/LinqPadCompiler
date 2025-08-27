@@ -2,6 +2,14 @@
 
 A command-line tool that compiles LINQPad scripts (`.linq` files) into standalone executable applications.
 
+> **⚠️ Important Limitation**: This tool only supports basic C# Program scripts that use standard .NET libraries and NuGet packages. It does **NOT** support LINQPad-specific features like:
+> - `Dump()` method and other LINQPad extension methods
+> - `LINQPad.*` namespace methods
+> - `UserQuery` base class functionality
+> - LINQPad's built-in visualization features
+> 
+> Only use this for scripts that would compile as standard C# console applications.
+
 ## Quick Installation
 
 ### Automatic Installation (Recommended)
