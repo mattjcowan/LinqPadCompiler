@@ -205,14 +205,22 @@ LinqPadCompiler/
 3. Click "Run workflow" and manually trigger it
 4. If successful, then create the real tag
 
+```bash
+git add .
+git commit -m "Fix Windows PowerShell syntax in GitHub Actions"
+git push origin main
+# Then manually trigger workflow on GitHub to test
+# Only create tag after verifying it works
+```
+
 #### Create a patch release
 
 ```bash
-  git add .github/workflows/release.yml
-  git commit -m "Fix Windows PowerShell syntax in GitHub Actions"
-  git tag v1.0.1
-  git push origin main
-  git push origin v1.0.1
+git add .
+git commit -m "Fix Windows PowerShell syntax in GitHub Actions"
+git tag v1.0.1
+git push origin main
+git push origin v1.0.1
 ```
 
 ### Development Workflow
