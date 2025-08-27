@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="LinqPadCompiler" preserve="all">
+    <type fullname="LinqPadCompiler.LPQuery" preserve="all" />
+  </assembly>
+</linker>
