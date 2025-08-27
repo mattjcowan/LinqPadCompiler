@@ -203,7 +203,6 @@ LinqPadCompiler/
 1. Commit the fix
 2. Go to GitHub → Actions → "Build and Release" workflow
 3. Click "Run workflow" and manually trigger it
-4. If successful, then create the real tag
 
 ```bash
 git add .
@@ -211,6 +210,13 @@ git commit -m "Fix Windows PowerShell syntax in GitHub Actions"
 git push origin main
 # Then manually trigger workflow on GitHub to test
 # Only create tag after verifying it works
+```
+
+If successful, then create the real tag:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
 #### Create a patch release
