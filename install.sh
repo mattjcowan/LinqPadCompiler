@@ -108,7 +108,7 @@ determine_variant() {
     if [ -n "$VARIANT" ]; then
         # Validate specified variant
         if [[ "$VARIANT" != "lite" && "$VARIANT" != "full" ]]; then
-            echo -e "${RED}Error: variant must be 'lite' or 'full'${NC}"
+            echo -e "${RED}Error: variant must be 'lite' or 'full'${NC}" >&2
             exit 1
         fi
         echo "$VARIANT"
@@ -116,20 +116,20 @@ determine_variant() {
     fi
     
     # Auto-detect appropriate variant
-    echo -e "${YELLOW}Checking .NET SDK availability...${NC}"
+    echo -e "${YELLOW}Checking .NET SDK availability...${NC}" >&2
     dotnet_status=$(check_dotnet_sdk)
     
     if [[ "$dotnet_status" == found:* ]]; then
         local version="${dotnet_status#found:}"
-        echo -e "${GREEN}✓ .NET SDK found: $version${NC}"
-        echo -e "${BLUE}Recommendation: Using 'lite' variant (~10MB)${NC}"
+        echo -e "${GREEN}✓ .NET SDK found: $version${NC}" >&2
+        echo -e "${BLUE}Recommendation: Using 'lite' variant (~10MB)${NC}" >&2
         echo "lite"
     else
-        echo -e "${YELLOW}⚠ .NET SDK not found${NC}"
-        echo -e "${BLUE}Recommendation: Use 'full' variant (~200MB) for complete self-contained installation${NC}"
-        echo -e "${YELLOW}Installing 'lite' variant by default. You can install the 'full' variant with:${NC}"
-        echo -e "${BLUE}curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full${NC}"
-        echo ""
+        echo -e "${YELLOW}⚠ .NET SDK not found${NC}" >&2
+        echo -e "${BLUE}Recommendation: Use 'full' variant (~200MB) for complete self-contained installation${NC}" >&2
+        echo -e "${YELLOW}Installing 'lite' variant by default. You can install the 'full' variant with:${NC}" >&2
+        echo -e "${BLUE}curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full${NC}" >&2
+        echo "" >&2
         echo "lite"
     fi
 }
