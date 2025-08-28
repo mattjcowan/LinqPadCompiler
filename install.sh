@@ -8,23 +8,42 @@ set -e
 
 # Parse command line arguments
 VARIANT=""
+SYSTEM_INSTALL="false"
 while [[ $# -gt 0 ]]; do
     case $1 in
         --variant=*)
             VARIANT="${1#*=}"
             shift
             ;;
+        --system)
+            SYSTEM_INSTALL="true"
+            shift
+            ;;
         --help|-h)
-            echo "Usage: $0 [--variant=lite|full]"
+            echo "Usage: $0 [--variant=lite|full] [--system]"
             echo ""
-            echo "Variants:"
-            echo "  lite: ~10MB download, requires .NET SDK on target machine"
-            echo "  full: ~200MB download, completely self-contained (no .NET SDK required)"
+            echo "Options:"
+            echo "  --variant=lite|full  Choose installation variant"
+            echo "    lite: ~10MB download, requires .NET SDK on target machine"
+            echo "    full: ~200MB download, completely self-contained (no .NET SDK required)"
+            echo ""
+            echo "  --system  Install system-wide to /usr/local/bin (requires root/sudo)"
+            echo "            Default: installs to ~/.local/bin for current user only"
             echo ""
             echo "If --variant is not specified, the script will:"
             echo "1. Check if .NET SDK is available"
             echo "2. Recommend the appropriate variant"
             echo "3. Install the lite variant by default (with warning if .NET SDK missing)"
+            echo ""
+            echo "Examples:"
+            echo "  # User installation (default)"
+            echo "  curl -fsSL .../install.sh | bash"
+            echo ""
+            echo "  # System-wide installation for all users (including root/cron)"
+            echo "  curl -fsSL .../install.sh | sudo bash -s -- --system"
+            echo ""
+            echo "  # System-wide with full variant (recommended for servers)"
+            echo "  curl -fsSL .../install.sh | sudo bash -s -- --system --variant=full"
             exit 0
             ;;
         *)
@@ -45,7 +64,20 @@ NC='\033[0m' # No Color
 # Configuration
 REPO="mattjcowan/LinqPadCompiler"
 BINARY_NAME="linqpadcompiler"
-INSTALL_DIR="$HOME/.local/bin"
+
+# Determine installation directory based on --system flag
+if [ "$SYSTEM_INSTALL" == "true" ]; then
+    INSTALL_DIR="/usr/local/bin"
+    # Check for root/sudo privileges
+    if [ "$EUID" -ne 0 ]; then
+        echo -e "${RED}Error: System-wide installation requires root privileges${NC}"
+        echo -e "${YELLOW}Please run with sudo:${NC}"
+        echo -e "${BLUE}  curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | sudo bash -s -- --system${NC}"
+        exit 1
+    fi
+else
+    INSTALL_DIR="$HOME/.local/bin"
+fi
 
 # Detect platform
 detect_platform() {
@@ -234,7 +266,12 @@ install_linqpadcompiler() {
     fi
     
     echo -e "${GREEN}✓ LinqPadCompiler ($variant variant) installed successfully!${NC}"
-    echo -e "${BLUE}Installation location: $INSTALL_DIR/$BINARY_NAME${NC}"
+    if [ "$SYSTEM_INSTALL" == "true" ]; then
+        echo -e "${BLUE}System-wide installation location: $INSTALL_DIR/$BINARY_NAME${NC}"
+        echo -e "${GREEN}✓ Available to all users including root and cron jobs${NC}"
+    else
+        echo -e "${BLUE}User installation location: $INSTALL_DIR/$BINARY_NAME${NC}"
+    fi
     
     # Show variant-specific information
     if [ "$variant" == "full" ]; then
@@ -250,12 +287,20 @@ install_linqpadcompiler() {
     fi
     
     # Check if install directory is in PATH
-    if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-        echo -e "${YELLOW}Warning: $INSTALL_DIR is not in your PATH${NC}"
-        echo -e "${YELLOW}Add this line to your shell profile (~/.bashrc, ~/.zshrc, etc.):${NC}"
-        echo -e "${BLUE}export PATH=\"\$PATH:$INSTALL_DIR\"${NC}"
-        echo ""
-        echo -e "${YELLOW}Or run the tool directly with: $INSTALL_DIR/$BINARY_NAME${NC}"
+    if [ "$SYSTEM_INSTALL" == "true" ]; then
+        # /usr/local/bin should be in PATH for most systems
+        if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+            echo -e "${YELLOW}Warning: $INSTALL_DIR is not in PATH${NC}"
+            echo -e "${YELLOW}This is unusual for system installations. Check your system's PATH configuration.${NC}"
+        fi
+    else
+        if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+            echo -e "${YELLOW}Warning: $INSTALL_DIR is not in your PATH${NC}"
+            echo -e "${YELLOW}Add this line to your shell profile (~/.bashrc, ~/.zshrc, etc.):${NC}"
+            echo -e "${BLUE}export PATH=\"\$PATH:$INSTALL_DIR\"${NC}"
+            echo ""
+            echo -e "${YELLOW}Or run the tool directly with: $INSTALL_DIR/$BINARY_NAME${NC}"
+        fi
     fi
     
     # Test installation
@@ -275,6 +320,11 @@ install_linqpadcompiler() {
 # Main
 echo -e "${GREEN}LinqPadCompiler Installation Script${NC}"
 echo -e "${BLUE}Repository: https://github.com/$REPO${NC}"
+if [ "$SYSTEM_INSTALL" == "true" ]; then
+    echo -e "${YELLOW}Installing system-wide for all users...${NC}"
+else
+    echo -e "${YELLOW}Installing for current user only...${NC}"
+fi
 echo ""
 
 install_linqpadcompiler

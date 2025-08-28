@@ -26,14 +26,26 @@ irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps
 
 ### Linux/macOS (Bash)
 
+#### User Installation (Default)
 ```bash
-# Auto-detects .NET SDK and installs appropriate variant
+# Auto-detects .NET SDK and installs to ~/.local/bin (current user only)
 curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
 
 # Or choose specific variant
 curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=lite  # ~10MB, requires .NET SDK
 curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full  # ~200MB, self-contained
 ```
+
+#### System-Wide Installation (For All Users/Cron/Root)
+```bash
+# Install system-wide to /usr/local/bin (requires sudo)
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | sudo bash -s -- --system
+
+# System-wide with full variant (recommended for servers/cron jobs)
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | sudo bash -s -- --system --variant=full
+```
+
+> **Note for Server/Cron Usage**: The `--system` flag installs to `/usr/local/bin`, making linqpadcompiler available to all users including root and cron jobs. The full variant is recommended for server environments as it includes a bundled .NET SDK.
 
 ### Manual Installation
 
@@ -191,6 +203,9 @@ Each platform-specific script supports:
 
 # Test installation process end-to-end
 ./tests/test-installation.sh
+
+# Test system-wide installation (requires sudo)
+sudo ./tests/test-installation.sh --system
 
 # Quick argument verification test
 ./tests/verify-args.sh
