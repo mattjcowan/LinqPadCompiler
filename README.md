@@ -76,6 +76,49 @@ curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/ins
 | **Lite** | ~10MB         | ~30MB          | ✅ Yes            | Developers, CI/CD pipelines            |
 | **Full** | ~200MB        | ~600MB         | ❌ No             | Production servers, clean environments |
 
+## Uninstallation
+
+### Linux/macOS
+
+#### User Uninstallation
+```bash
+# Remove user installation from ~/.local/bin
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.sh | bash
+
+# Or download and run locally
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.sh -o uninstall.sh
+chmod +x uninstall.sh
+./uninstall.sh
+```
+
+#### System-Wide Uninstallation
+```bash
+# Remove system-wide installation from /usr/local/bin (requires sudo)
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.sh | sudo bash -s -- --system
+
+# Or download and run locally
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.sh -o uninstall.sh
+chmod +x uninstall.sh
+sudo ./uninstall.sh --system
+```
+
+### Windows
+
+#### User Uninstallation
+```powershell
+# Remove user installation from %LOCALAPPDATA%\LinqPadCompiler
+irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.ps1 -OutFile uninstall.ps1
+.\uninstall.ps1
+```
+
+#### System-Wide Uninstallation
+```powershell
+# Remove system-wide installation from Program Files (requires Administrator)
+# Run PowerShell as Administrator first!
+irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/uninstall.ps1 -OutFile uninstall.ps1
+.\uninstall.ps1 -System
+```
+
 ## Usage
 
 ### Basic Examples

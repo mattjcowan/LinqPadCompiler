@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <!-- Version properties - these will be used by all projects in this directory tree -->
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <InformationalVersion>1.0.2</InformationalVersion>
+    
+    <!-- Company and product information -->
+    <Authors>mattjcowan</Authors>
+    <Product>LinqPadCompiler</Product>
+    <Copyright>Copyright © 2025</Copyright>
+    <Description>Command-line compiler for LINQPad scripts</Description>
+    
+    <!-- Repository information -->
+    <RepositoryUrl>https://github.com/mattjcowan/LinqPadCompiler</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>

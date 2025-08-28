@@ -192,26 +192,62 @@ jobs:
         else
           echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         fi
+        
+        # Also read version from version.json for consistency
+        if [ -f "version.json" ]; then
+          JSON_VERSION=$(grep -o '"version": *"[^"]*"' version.json | sed 's/"version": *"\(.*\)"/\1/')
+          echo "json_version=$JSON_VERSION" >> $GITHUB_OUTPUT
+        fi
 
+    - name: Read Changelog
+      id: changelog
+      run: |
+        # Extract the latest version's changelog entry
+        VERSION="${{ steps.get_version.outputs.version }}"
+        VERSION_NO_V="${VERSION#v}"
+        
+        if [ -f "CHANGELOG.md" ]; then
+          # Extract content between this version and the next version header
+          CHANGELOG_CONTENT=$(awk "/## \\[$VERSION\\]|## \\[$VERSION_NO_V\\]/{flag=1; next} /## \\[/{flag=0} flag" CHANGELOG.md)
+          
+          # Save to file for the release body
+          echo "$CHANGELOG_CONTENT" > changelog_entry.md
+          echo "Found changelog entry for $VERSION"
+        else
+          echo "No CHANGELOG.md found, using default release notes"
+          echo "" > changelog_entry.md
+        fi
+    
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.get_version.outputs.version }}
         name: LinqPadCompiler ${{ steps.get_version.outputs.version }}
+        body_path: changelog_entry.md
         body: |
           ## LinqPadCompiler ${{ steps.get_version.outputs.version }}
 
           ### Installation
 
-          **Windows (PowerShell):**
+          **Quick Installation:**
+
+          Windows (PowerShell):
           ```powershell
+          # User installation (default)
           irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex
+          
+          # System-wide (run as Administrator)
+          .\install.ps1 -System
           ```
 
-          **Linux/macOS (Bash):**
+          Linux/macOS:
           ```bash
+          # User installation (default)
           curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
+          
+          # System-wide (with sudo)
+          curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | sudo bash -s -- --system
           ```
 
           **Choose Specific Variant:**
@@ -239,10 +275,10 @@ jobs:
           linqpadcompiler --linq-file script.linq --output-type SingleFileDll
           ```
 
-          ### Changes
-          - Added dual-variant distribution (lite/full)
-          - Full variant includes bundled .NET SDK
-          - Both variants support identical functionality
+          ### Downloads
+          Choose the appropriate variant and platform below:
+          - **Lite variants** (~10MB): Require .NET SDK on target machine
+          - **Full variants** (~200MB): Self-contained with bundled .NET SDK
         files: |
           ./artifacts/linqpadcompiler-lite-linux-x64/linqpadcompiler-lite-linux-x64.tar.gz
           ./artifacts/linqpadcompiler-lite-win-x64/linqpadcompiler-lite-win-x64.zip
