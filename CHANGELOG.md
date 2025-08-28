@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.0.3] - 2025-08-28
+
+### Changed
+- Added uninstall scripts, and an easy release script to handle tagging and new release deployments (3277562)
+- Added system wide install for windows in powershell (9c69e6c)
+- Added system wide install on linux/macos (b080a0b)
+
 ## [1.0.2] - 2025-01-28
 
 ### Added
