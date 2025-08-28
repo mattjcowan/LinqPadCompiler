@@ -1,17 +1,44 @@
 # LinqPadCompiler Installation Script for Windows
 # Usage: irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex
-# Or download and run: .\install.ps1 [-Variant lite|full]
+# Or download and run: .\install.ps1 [-Variant lite|full] [-System]
+# 
+# Examples:
+#   User installation (default):
+#     irm .../install.ps1 | iex
+#   
+#   System-wide installation (requires admin):
+#     irm .../install.ps1 | iex -System
+#   
+#   System-wide with full variant:
+#     .\install.ps1 -Variant full -System
 
 param(
     [ValidateSet('lite', 'full', '')]
-    [string]$Variant = ''
+    [string]$Variant = '',
+    [switch]$System
 )
 
 $ErrorActionPreference = 'Stop'
 
 # Configuration
 $repo = "mattjcowan/LinqPadCompiler"
-$installDir = "$env:LOCALAPPDATA\LinqPadCompiler"
+
+# Determine installation directory based on -System flag
+if ($System) {
+    # Check for admin privileges
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+    if (-not $isAdmin) {
+        Write-Host "Error: System-wide installation requires Administrator privileges" -ForegroundColor Red
+        Write-Host "Please run PowerShell as Administrator and try again:" -ForegroundColor Yellow
+        Write-Host "  irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex -System" -ForegroundColor Blue
+        exit 1
+    }
+    $installDir = "$env:ProgramFiles\LinqPadCompiler"
+    $pathScope = "Machine"
+} else {
+    $installDir = "$env:LOCALAPPDATA\LinqPadCompiler"
+    $pathScope = "User"
+}
 $binDir = "$installDir\bin"
 
 # Colors for output
@@ -26,6 +53,11 @@ function Write-ColorOutput($ForegroundColor) {
 
 Write-Host "LinqPadCompiler Installation Script" -ForegroundColor Green
 Write-Host "Repository: https://github.com/$repo" -ForegroundColor Blue
+if ($System) {
+    Write-Host "Installing system-wide for all users..." -ForegroundColor Yellow
+} else {
+    Write-Host "Installing for current user only..." -ForegroundColor Yellow
+}
 Write-Host ""
 
 # Detect platform
@@ -63,7 +95,7 @@ function Get-InstallVariant {
         Write-Host "⚠ .NET SDK not found" -ForegroundColor Yellow
         Write-Host "Recommendation: Use 'full' variant (~200MB) for complete self-contained installation" -ForegroundColor Blue
         Write-Host "Installing 'lite' variant by default. You can install the 'full' variant with:" -ForegroundColor Yellow
-        Write-Host "irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex -Variant full" -ForegroundColor Blue
+        Write-Host ".\install.ps1 -Variant full" -ForegroundColor Blue
         Write-Host ""
         return "lite"
     }
@@ -122,19 +154,28 @@ try {
         Copy-Item -Path "$sourceDir\*" -Destination $binDir -Recurse
         
         # Add to PATH if not already there
-        $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-        if ($userPath -notlike "*$binDir*") {
-            Write-Host "Adding to PATH..." -ForegroundColor Yellow
-            [Environment]::SetEnvironmentVariable("Path", "$userPath;$binDir", "User")
+        $currentPath = [Environment]::GetEnvironmentVariable("Path", $pathScope)
+        if ($currentPath -notlike "*$binDir*") {
+            Write-Host "Adding to PATH ($pathScope scope)..." -ForegroundColor Yellow
+            [Environment]::SetEnvironmentVariable("Path", "$currentPath;$binDir", $pathScope)
             $env:Path = "$env:Path;$binDir"
-            Write-Host "✓ Added to PATH (restart terminal to use globally)" -ForegroundColor Green
+            if ($System) {
+                Write-Host "✓ Added to system PATH (restart terminal to use globally)" -ForegroundColor Green
+            } else {
+                Write-Host "✓ Added to user PATH (restart terminal to use globally)" -ForegroundColor Green
+            }
         } else {
             Write-Host "✓ Already in PATH" -ForegroundColor Green
         }
         
         Write-Host ""
         Write-Host "✓ LinqPadCompiler ($installVariant variant) installed successfully!" -ForegroundColor Green
-        Write-Host "Installation location: $binDir" -ForegroundColor Blue
+        if ($System) {
+            Write-Host "System-wide installation location: $binDir" -ForegroundColor Blue
+            Write-Host "✓ Available to all users including SYSTEM account and scheduled tasks" -ForegroundColor Green
+        } else {
+            Write-Host "User installation location: $binDir" -ForegroundColor Blue
+        }
         
         # Show variant-specific information
         if ($installVariant -eq "full") {

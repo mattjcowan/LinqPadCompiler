@@ -14,8 +14,9 @@ A command-line tool that compiles LINQPad scripts (`.linq` files) into standalon
 
 ### Windows (PowerShell)
 
+#### User Installation (Default)
 ```powershell
-# Auto-detects .NET SDK and installs appropriate variant
+# Auto-detects .NET SDK and installs to %LOCALAPPDATA%\LinqPadCompiler (current user only)
 irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex
 
 # Or choose specific variant
@@ -23,6 +24,19 @@ irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps
 .\install.ps1 -Variant lite  # ~10MB, requires .NET SDK
 .\install.ps1 -Variant full  # ~200MB, self-contained
 ```
+
+#### System-Wide Installation (For All Users/Scheduled Tasks)
+```powershell
+# Install system-wide to Program Files (requires Administrator privileges)
+# Run PowerShell as Administrator first!
+irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 -OutFile install.ps1
+.\install.ps1 -System
+
+# System-wide with full variant (recommended for servers/scheduled tasks)
+.\install.ps1 -System -Variant full
+```
+
+> **Note for Server/Scheduled Task Usage**: The `-System` flag installs to `C:\Program Files\LinqPadCompiler`, making linqpadcompiler available to all users including the SYSTEM account for scheduled tasks. The full variant is recommended for server environments as it includes a bundled .NET SDK.
 
 ### Linux/macOS (Bash)
 
