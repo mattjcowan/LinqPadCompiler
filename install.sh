@@ -149,7 +149,10 @@ install_linqpadcompiler() {
     echo -e "${BLUE}Detected platform: $platform${NC}"
     
     # Determine variant to install
+    echo -e "${YELLOW}Determining best variant for your system...${NC}"
     variant=$(determine_variant)
+    # Clean up any potential control characters
+    variant=$(echo "$variant" | tr -d '\r\n\033\014\007' | sed 's/\[[0-9;]*m//g')
     echo -e "${GREEN}Installing variant: $variant${NC}"
     echo ""
     
