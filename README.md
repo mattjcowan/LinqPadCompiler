@@ -5,28 +5,34 @@ A command-line tool that compiles LINQPad scripts (`.linq` files) into standalon
 > **⚠️ Important Limitation**: This tool only supports basic C# Program scripts that use standard .NET libraries and NuGet packages. It does **NOT** support LINQPad-specific features like:
 > - `Dump()` method and other LINQPad extension methods
 > - `LINQPad.*` namespace methods
-> - `UserQuery` base class functionality
+> - `UserQuery` class functionality
 > - LINQPad's built-in visualization features
 > 
 > Only use this for scripts that would compile as standard C# console applications.
 
 ## Quick Installation
 
-### Automatic Installation (Recommended)
+### Windows (PowerShell)
 
-```bash
-# Auto-detects your platform and .NET SDK availability
-curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
+```powershell
+# Auto-detects .NET SDK and installs appropriate variant
+irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex
+
+# Or choose specific variant
+irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 -OutFile install.ps1
+.\install.ps1 -Variant lite  # ~10MB, requires .NET SDK
+.\install.ps1 -Variant full  # ~200MB, self-contained
 ```
 
-### Choose Your Variant
+### Linux/macOS (Bash)
 
 ```bash
-# Lite: ~10MB download, requires .NET SDK on target machine
-curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=lite
+# Auto-detects .NET SDK and installs appropriate variant
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
 
-# Full: ~200MB download, completely self-contained (no .NET SDK required)
-curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full
+# Or choose specific variant
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=lite  # ~10MB, requires .NET SDK
+curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full  # ~200MB, self-contained
 ```
 
 ### Manual Installation
@@ -66,6 +72,12 @@ Generate source code only (no compilation):
 linqpadcompiler --linq-file script.linq --output-dir ./output --output-type SourceFolderOnly --create
 ```
 
+Clean up source files after compilation (keep only compiled output):
+
+```bash
+linqpadcompiler --linq-file script.linq --output-dir ./output --create --no-src
+```
+
 ### Command-Line Options
 
 ```
@@ -78,6 +90,7 @@ Options:
   -t, --output-type <CompiledFolder|SingleFileDll|SourceFolderOnly>  Output type for compilation [default: CompiledFolder]
   -c, --create                                                       Create the output directory if it does not exist [default: False]
   -v, --verbose                                                      Enable verbose output [default: False]
+  --no-src                                                           Delete source files after compilation (keep only compiled output) [default: False]
   --version                                                          Show version information
   -?, -h, --help                                                     Show help and usage information
 ```

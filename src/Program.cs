@@ -57,11 +57,18 @@ var verboseOption = new Option<bool>(
     "Enable verbose output"
 );
 
+var noSrcOption = new Option<bool>(
+    "--no-src",
+    getDefaultValue: () => false,
+    "Delete source files after compilation (keep only compiled output)"
+);
+
 rootCommand.AddOption(linqFileOption);
 rootCommand.AddOption(outputDirOption);
 rootCommand.AddOption(outputTypeOption);
 rootCommand.AddOption(createOption);
 rootCommand.AddOption(verboseOption);
+rootCommand.AddOption(noSrcOption);
 
 rootCommand.SetHandler(
     async (context) =>
@@ -71,6 +78,7 @@ rootCommand.SetHandler(
         var outputType = context.ParseResult.GetValueForOption(outputTypeOption);
         var create = context.ParseResult.GetValueForOption(createOption);
         var verbose = context.ParseResult.GetValueForOption(verboseOption);
+        var noSrc = context.ParseResult.GetValueForOption(noSrcOption);
 
         context.ExitCode = await ExecuteAsync(
             linqFile,
@@ -78,6 +86,7 @@ rootCommand.SetHandler(
             outputType,
             create,
             verbose,
+            noSrc,
             context.GetCancellationToken()
         );
     }
@@ -91,6 +100,7 @@ static async Task<int> ExecuteAsync(
     OutputType outputType,
     bool create,
     bool verbose,
+    bool noSrc,
     CancellationToken cancellationToken
 )
 {
@@ -152,6 +162,12 @@ static async Task<int> ExecuteAsync(
         {
             logger.LogError($"Compilation failed: {compileResult.Error}");
             return 1;
+        }
+
+        // Clean up source files if requested
+        if (noSrc && outputType != OutputType.SourceFolderOnly)
+        {
+            await CleanupHelper.CleanupSourceFiles(outputDir, logger, cancellationToken);
         }
 
         logger.LogSuccess($"Successfully compiled to: {outputDir.FullName}");
@@ -632,6 +648,65 @@ public class Program
             public static ProcessResult Ok() => new(true, null);
 
             public static ProcessResult Failure(string error) => new(false, error);
+        }
+    }
+
+    public static class CleanupHelper
+    {
+        public static Task CleanupSourceFiles(DirectoryInfo outputDir, ILogger logger, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var srcDir = Path.Combine(outputDir.FullName, "src");
+                if (!Directory.Exists(srcDir))
+                {
+                    logger.LogVerbose("No src directory found to clean up");
+                    return Task.CompletedTask;
+                }
+
+                logger.LogVerbose($"Cleaning up source files in: {srcDir}");
+
+                // Get all project subdirectories inside src
+                var srcDirInfo = new DirectoryInfo(srcDir);
+                var projectDirs = srcDirInfo.GetDirectories();
+
+                if (projectDirs.Length == 0)
+                {
+                    logger.LogVerbose("No project directories found in src");
+                    // Remove empty src directory
+                    Directory.Delete(srcDir, false);
+                    logger.LogVerbose("Removed empty src directory");
+                    return Task.CompletedTask;
+                }
+
+                // Delete each project directory
+                foreach (var projectDir in projectDirs)
+                {
+                    logger.LogVerbose($"Removing project directory: {projectDir.Name}");
+                    Directory.Delete(projectDir.FullName, true);
+                }
+
+                // Check if src directory is now empty
+                var remainingItems = Directory.GetFileSystemEntries(srcDir);
+                if (remainingItems.Length == 0)
+                {
+                    logger.LogVerbose("Removing now-empty src directory");
+                    Directory.Delete(srcDir, false);
+                }
+                else
+                {
+                    logger.LogVerbose($"Src directory still contains {remainingItems.Length} items, leaving it intact");
+                }
+
+                logger.LogInfo("Source files cleaned up successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning($"Failed to clean up source files: {ex.Message}");
+                // Don't fail the entire operation just because cleanup failed
+            }
+            
+            return Task.CompletedTask;
         }
     }
 

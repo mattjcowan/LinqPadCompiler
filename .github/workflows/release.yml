@@ -204,18 +204,26 @@ jobs:
 
           ### Installation
 
-          **Quick Install (Auto-detects variant):**
+          **Windows (PowerShell):**
+          ```powershell
+          irm https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.ps1 | iex
+          ```
+
+          **Linux/macOS (Bash):**
           ```bash
           curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash
           ```
 
           **Choose Specific Variant:**
+          ```powershell
+          # Windows
+          .\install.ps1 -Variant lite   # ~10MB, requires .NET SDK
+          .\install.ps1 -Variant full   # ~200MB, self-contained
+          ```
           ```bash
-          # For users with .NET SDK installed (~10MB download)
-          curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=lite
-          
-          # For users without .NET SDK (~200MB download, fully self-contained)
-          curl -fsSL https://raw.githubusercontent.com/mattjcowan/LinqPadCompiler/main/install.sh | bash -s -- --variant=full
+          # Linux/macOS  
+          curl ... | bash -s -- --variant=lite  # ~10MB, requires .NET SDK
+          curl ... | bash -s -- --variant=full  # ~200MB, self-contained
           ```
 
           ### Two Variants Available

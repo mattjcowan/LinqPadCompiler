@@ -139,6 +139,80 @@ run_test() {
     fi
 }
 
+# Function to test --no-src cleanup functionality
+run_test_with_cleanup() {
+    local test_name=$1
+    local linq_file=$2
+    local output_type=$3
+    local expected_output=$4
+    local test_args="${5:-}"
+    
+    echo -e "\n${YELLOW}Testing: $test_name ($output_type with --no-src)${NC}"
+    
+    local test_output_dir="$OUTPUT_DIR/${test_name}_${output_type}"
+    
+    # Compile the LINQ file with --no-src
+    echo "  Compiling $linq_file with --no-src..."
+    local compile_output
+    if ! compile_output=$("$COMPILER" --linq-file "$linq_file" --output-dir "$test_output_dir" --output-type "$output_type" --create --no-src 2>&1); then
+        echo -e "  ${RED}✗ Compilation failed${NC}"
+        echo -e "  ${RED}Error: $compile_output${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
+    echo -e "  ${GREEN}✓ Compilation successful${NC}"
+    
+    # Check that src directory was cleaned up
+    if [ -d "$test_output_dir/src" ]; then
+        echo -e "  ${RED}✗ Source directory was not cleaned up${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
+    echo -e "  ${GREEN}✓ Source directory cleaned up successfully${NC}"
+    
+    # Find the executable
+    local executable=""
+    local executable_name=$(basename "$linq_file" .linq)
+    executable_name=$(echo "$executable_name" | sed 's/[^a-zA-Z0-9]/_/g')
+    
+    # For CompiledFolder, look for the native executable in the nested directory
+    executable=$(find "$test_output_dir/dist/$executable_name" -type f -executable -name "$executable_name" 2>/dev/null | head -1)
+    if [ -z "$executable" ]; then
+        # Fallback to dll if no native executable
+        local dll_path=$(find "$test_output_dir/dist/$executable_name" -type f -name "$executable_name.dll" 2>/dev/null | head -1)
+        if [ -n "$dll_path" ]; then
+            executable="dotnet $dll_path"
+        fi
+    fi
+    
+    if [ -z "$executable" ] || [ ! -f "${executable%% *}" ]; then
+        echo -e "  ${RED}✗ Executable not found${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
+    
+    # Execute and check output
+    echo "  Executing compiled program..."
+    local actual_output
+    if [ -n "$test_args" ]; then
+        actual_output=$(cd "$test_output_dir/dist" && $executable $test_args 2>&1) || true
+    else
+        actual_output=$(cd "$test_output_dir/dist" && $executable 2>&1) || true
+    fi
+    
+    if echo "$actual_output" | grep -q "$expected_output"; then
+        echo -e "  ${GREEN}✓ Output matches expected and cleanup worked: '$expected_output'${NC}"
+        ((TESTS_PASSED++))
+        return 0
+    else
+        echo -e "  ${RED}✗ Output mismatch${NC}"
+        echo -e "  ${RED}Expected to contain: '$expected_output'${NC}"
+        echo -e "  ${RED}Actual output: '$actual_output'${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
+}
+
 # Function to test a packaged variant
 test_variant_compilation() {
     local compiler_path=$1
@@ -203,6 +277,9 @@ run_test "FileOperations" "$SAMPLES_DIR/FileOperations.linq" "CompiledFolder" "F
 
 # Test 5: Source-only generation
 run_test "SourceOnly" "$SAMPLES_DIR/HelloWorld.linq" "SourceFolderOnly" ""
+
+# Test 6: --no-src option (cleanup source files)
+run_test_with_cleanup "NoSrcCleanup" "$SAMPLES_DIR/HelloWorld.linq" "CompiledFolder" "Hello, World!"
 
 # Test packaged variants if requested
 if [ "$TEST_VARIANTS" == "true" ]; then
