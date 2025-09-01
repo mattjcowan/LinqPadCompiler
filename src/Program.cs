@@ -586,9 +586,12 @@ public class Program
         {
             return outputType switch
             {
+                // OutputType.SingleFileDll =>
+                //     $"publish -c Release -r linux-x64 --self-contained true "
+                //         + $"/p:PublishSingleFile=true /p:PublishTrimmed=true /p:TrimMode=link -o \"{outputDir}\"",
                 OutputType.SingleFileDll =>
                     $"publish -c Release -r linux-x64 --self-contained true "
-                        + $"/p:PublishSingleFile=true /p:PublishTrimmed=true /p:TrimMode=link -o \"{outputDir}\"",
+                        + $"/p:PublishSingleFile=true /p:PublishTrimmed=false -o \"{outputDir}\"",
                 OutputType.CompiledFolder =>
                     $"publish -c Release -r linux-x64 --self-contained false -o \"{outputDir}\"",
                 _ => string.Empty,
