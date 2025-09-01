@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.4] - 2025-09-01
+
+### Changed
+- Disabling trimming when compiling to single file, as it causes issues with many nuget packages, like Dapper (e93bd17)
+
 ## [v1.0.3] - 2025-08-28
 
 ### Changed
